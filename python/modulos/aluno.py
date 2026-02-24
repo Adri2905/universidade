@@ -1,5 +1,4 @@
-from modulos.
-mysql import MySQL
+from modulos.mysql import MySQL
 
 class Aluno:
     def __init__(self,nome,email,cpf,telefone,endereco):
