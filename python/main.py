@@ -1,7 +1,13 @@
 from modulos.aluno import Aluno
 from modulos.mysql import MySQL
 
-banco = MySQL()
+banco = MySQL(
+    '127.0.0.1',
+    'root',
+    '',
+    'universidade'
+)
+
 
 banco.connect()
 
@@ -14,9 +20,6 @@ aluno = Aluno (
     "Rua jose gomes ferreira,183"
     )
 
-query = aluno.cadastrar()
-#print(query)
-
-banco.execute_query(query)
+query = aluno.cadastrar(banco)
 
 banco.disconnect()
