@@ -11,6 +11,8 @@ banco = MySQL(
 
 banco.connect()
 
+aluno= Aluno.listar(banco)
+
 
 aluno = Aluno (
     "José Maria",

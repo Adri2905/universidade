@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class cadastrar():
+class Cadastrar():
     def __init__(self, app):
         self.app = app
         self.janela = QWidget()
