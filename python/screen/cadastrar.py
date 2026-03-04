@@ -1,18 +1,19 @@
 from modulos.mysql import MySQL
 from modulos.aluno import Aluno
 
-
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
-    QMessageBox
+    QMessageBox,
+    QFrame
 )
+from PySide6.QtCore import Qt
 
 
-class Cadastrar():
+class Cadastrar:
     def __init__(self, app):
         self.app = app
         self.janela = QWidget()
@@ -25,76 +26,86 @@ class Cadastrar():
         self.criar_componentes()
 
     def configurar_janela(self):
-        self.janela.setWindowTitle("Cadastrar Aluno")
+        self.janela.setWindowTitle("➕ Cadastrar Aluno")
 
-        # 🔹 Redimensionamento proporcional à tela
         screen = self.app.primaryScreen()
-        tamanho_tela = screen.availableGeometry()
+        tamanho = screen.availableGeometry()
 
-        largura = int(tamanho_tela.width() * 0.4)
-        altura = int(tamanho_tela.height() * 0.6)
+        largura = int(tamanho.width() * 0.4)
+        altura = int(tamanho.height() * 0.6)
 
         self.janela.resize(largura, altura)
-        self.janela.setMinimumSize(400, 300)
+        self.janela.setMinimumSize(400, 450)
 
         self.janela.setLayout(self.layout)
 
+        self.janela.setStyleSheet("""
+            QWidget {
+                background-color: #1e1e2f;
+                color: white;
+                font-family: Arial;
+            }
+
+            QLineEdit {
+                background-color: #2c2f48;
+                border-radius: 6px;
+                padding: 8px;
+                border: 1px solid #444;
+            }
+
+            QLineEdit:focus {
+                border: 1px solid #4e73df;
+            }
+
+            QPushButton {
+                background-color: #4e73df;
+                border-radius: 8px;
+                padding: 10px;
+            }
+
+            QPushButton:hover {
+                background-color: #2e59d9;
+            }
+        """)
+
     def criar_componentes(self):
-        componentes = {
-            "nome": "Digitar seu nome:",
-            "email": "Digitar seu email:",
-            "cpf": "Digitar seu cpf:",
-            "telefone": "Digitar seu telefone:",
-            "endereco": "Digitar seu endereco:"
+        titulo = QLabel("Cadastro de Novo Aluno")
+        titulo.setAlignment(Qt.AlignCenter)
+        titulo.setStyleSheet("font-size:18px; font-weight:bold;")
+        self.layout.addWidget(titulo)
+
+        linha = QFrame()
+        linha.setFrameShape(QFrame.HLine)
+        linha.setStyleSheet("background-color:#4e73df; max-height:2px;")
+        self.layout.addWidget(linha)
+
+        campos_texto = {
+            "nome": "Nome",
+            "email": "Email",
+            "cpf": "CPF",
+            "telefone": "Telefone",
+            "endereco": "Endereço"
         }
 
-        for chave, texto in componentes.items():
+        for chave, texto in campos_texto.items():
             label = QLabel(texto)
             campo = QLineEdit()
-
             self.layout.addWidget(label)
             self.layout.addWidget(campo)
-
             self.campos[chave] = campo
 
-        botao_cadastro = QPushButton("Cadastrar")
-        self.layout.addWidget(botao_cadastro)
+        botao = QPushButton("💾 Cadastrar")
+        botao.clicked.connect(self.cadastrar)
+        self.layout.addWidget(botao)
 
-        botao_cadastro.clicked.connect(self.cadastrar)
-
-    # 🔹 MÉTODO DE VALIDAÇÃO SEPARADO
     def validar_campos(self):
-        nome = self.campos["nome"].text().strip()
-        email = self.campos["email"].text().strip()
-        cpf = self.campos["cpf"].text().strip()
-        telefone = self.campos["telefone"].text().strip()
-        endereco = self.campos["endereco"].text().strip()
-
-        if not nome:
-            QMessageBox.warning(self.janela, "Erro", "O nome é obrigatório.")
-            return False
-
-        if not email or "@" not in email:
-            QMessageBox.warning(self.janela, "Erro", "Email inválido.")
-            return False
-
-        if not cpf or not cpf.isdigit() or len(cpf) != 11:
-            QMessageBox.warning(self.janela, "Erro", "CPF deve conter 11 números.")
-            return False
-
-        if not telefone or not telefone.isdigit():
-            QMessageBox.warning(self.janela, "Erro", "Telefone deve conter apenas números.")
-            return False
-
-        if not endereco:
-            QMessageBox.warning(self.janela, "Erro", "Endereço é obrigatório.")
-            return False
-
+        for chave, campo in self.campos.items():
+            if not campo.text().strip():
+                QMessageBox.warning(self.janela, "Erro", f"O campo {chave} é obrigatório.")
+                return False
         return True
 
     def cadastrar(self):
-
-        # 🔹 Valida antes de inserir no banco
         if not self.validar_campos():
             return
 
@@ -109,27 +120,13 @@ class Cadastrar():
         try:
             self.banco.connect()
             aluno.cadastrar(self.banco)
-
-            QMessageBox.information(
-                self.janela,
-                "Sucesso",
-                "Aluno Cadastrado!"
-            )
-
+            QMessageBox.information(self.janela, "Sucesso", "Aluno cadastrado!")
             self.limpar_campos()
-
         except Exception as e:
-            QMessageBox.critical(
-                self.janela,
-                "Erro",
-                f"Erro ao cadastrar: {e}"
-            )
-
+            QMessageBox.critical(self.janela, "Erro", str(e))
         finally:
             self.banco.disconnect()
 
     def limpar_campos(self):
         for campo in self.campos.values():
             campo.clear()
-
-
